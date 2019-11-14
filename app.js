@@ -57,11 +57,11 @@
             })
     })
 
-    app.get('/postagem/:slug', (req, res) => {
+    app.get('/post/:slug', (req, res) => {
         Postagem.findOne({slug: req.params.slug})
             .then(post => {
                 if (post) {
-                    res.render('postagem/index', {post: post})
+                    res.render('post/index', {post: post})
                 } else {
                     req.flash('error_msg', 'Esta postagem não existe!')
                     res.redirect('/')
