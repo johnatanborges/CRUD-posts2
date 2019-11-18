@@ -3,6 +3,7 @@
     const handlebars = require('express-handlebars')
     const mongoose = require('mongoose')
     const admin = require('./routes/admin')
+    const usuarios = require('./routes/usuarios')
     const path = require('path')
     const session = require('express-session')
     const flash = require('connect-flash')
@@ -116,6 +117,8 @@
     })
 
     app.use('/admin', admin)
+
+    app.use('/usuarios', usuarios)
 
 // Others
     const port = 8081
