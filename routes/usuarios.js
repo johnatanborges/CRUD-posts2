@@ -41,6 +41,19 @@ router.post('/registro', (req, res) => {
 
     } else {
 
+        Usuario.findOne({email: req.body.email})
+            .then(user => {
+                if(user) {
+                    req.flash('error_msg', 'Já existe uma conta com este email"')
+                    res.redirect('/registro')
+                } else {
+
+                }
+            }).catch(error => {
+                req.flash('error_msg', 'Houve um erro no registro deste usuário.')
+                res.redirect('/registro')
+                console.log(error)
+            })
     }
 
 })
