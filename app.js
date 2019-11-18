@@ -8,6 +8,8 @@
     const flash = require('connect-flash')
     require('./models/Postagem')
     const Postagem = mongoose.model('postagens')
+    require('./models/Categoria')
+    const Categoria = mongoose.model('categorias')
     const app = express()
 
 // Config
@@ -75,6 +77,42 @@
 
     app.get('/404', (req, res) => {
         res.send('Erro 404!')
+    })
+
+    app.get('/categorias', (req, res) => {
+        Categoria.find()
+            .then(categories => {
+                res.render('./categories/index', {categories: categories})
+            }).catch(error => {
+                req.flash('error_msg', 'Houve um erro ao listar as categorias')
+                res.redirect('/')
+                console.log(error)
+            })
+    })
+
+    app.get('/categorias/:slug', (req, res) => {
+        Categoria.findOne({slug: req.params.slug})
+            .then(category => {
+                if(category) {
+
+                    Postagem.find({category: category._id})
+                        .then(posts => {
+                            res.render('./categories/posts', {posts: posts, category: category})
+                        }).catch(error => {
+                            req.flash('error_msg', 'Houve um erro ao listar os posts')
+                            res.redirect('/categorias')
+                            console.log(error)
+                        })
+
+                } else {
+                    req.flash('error_msg', 'Esta categoria não existe')
+                    res.redirect('/categorias')
+                }
+            }).catch(error => {
+                req.flash('error_msg', 'Houve um erro ao carregar a página desta categoria')
+                res.redirect('/categorias')
+                console.log(error)
+            })
     })
 
     app.use('/admin', admin)
