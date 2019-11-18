@@ -3,6 +3,7 @@ const router = express.Router()
 const mongoose = require('mongoose')
 require('../models/Usuario')
 const Usuario = mongoose.model('usuarios')
+const bcrypt = require('bcryptjs')
 
 router.get('/registro', (req, res) => {
     res.render('usuarios/registro')
@@ -36,26 +37,48 @@ router.post('/registro', (req, res) => {
     }
 
     if(errors.length) {
-
         res.render('usuarios/registro', {errors: errors})
-
     } else {
-
         Usuario.findOne({email: req.body.email})
             .then(user => {
                 if(user) {
-                    req.flash('error_msg', 'Já existe uma conta com este email"')
-                    res.redirect('/registro')
+                    req.flash('error_msg', 'Já existe uma conta com este email no nosso sistema!')
+                    res.redirect('registro')
                 } else {
+                    const newUser = new Usuario({
+                        name: req.body.name,
+                        email: req.body.email,
+                        password: req.body.password
+                    })
+
+                    bcrypt.genSalt(10, (error, salt) => {
+                        bcrypt.hash(newUser.password, salt, (error, hash) => {
+                            if(error) {
+                                req.flash('error_msg', 'Houve um erro durante a criação do usuario!')
+                                res.redirect('/')
+                                console.log(error)
+                            } else {
+                                newUser.password = hash
+                                newUser.save()
+                                    .then(() => {
+                                        req.flash('success_msg', 'Usuário criado com sucesso!')
+                                        res.redirect('/')
+                                    }).catch(error => {
+                                        req.flash('error_msg', 'Houve um erro ao salvar o usuário')
+                                        res.redirect('registro')
+                                        console.log(error)
+                                    })
+                            }
+                        })
+                    })
 
                 }
             }).catch(error => {
                 req.flash('error_msg', 'Houve um erro no registro deste usuário.')
-                res.redirect('/registro')
+                res.redirect('/')
                 console.log(error)
             })
     }
-
 })
 
 
